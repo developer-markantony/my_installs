@@ -1,0 +1,48 @@
+#!/bin/bash
+kubeconfig_path=''
+
+function unknown_option() {
+    echo -e "\nUnknown K8S node type: $1 \n"; 
+    echo "--------------------------------------------------------------------------"
+    echo "    Preferred Ubuntu 20.04_LTS or above with below requirements"
+    echo "------------------------------ Master setup ------------------------------"
+    echo "    Minimum requirement - 2GB RAM & 2Core CPU" 
+    echo "    k8s_install.sh master"
+    echo "------------------------------ Worker setup ------------------------------"
+    echo "    Minimum requirement - Any"
+    echo "    k8s_install.sh worker"
+    echo "--------------------------------------------------------------------------"
+}
+
+# Check if the machine Linux and Distro is Ubuntu or RHEL(RedHat)
+UNAME=$(uname | tr "[:upper:]" "[:lower:]")
+# If Linux, try to determine specific distribution
+if [ "$UNAME" == "linux" ]; then
+    # If available, use LSB to identify distribution
+    if [ -f /etc/lsb-release -o -d /etc/lsb-release.d ]; then
+        kubeconfig_path='/home/ubuntu' 
+    elif [[ -f /etc/redhat-release ]]; then
+        kubeconfig_path='/home/ec2-user'
+    else 
+        echo -e "   Linux is not either Ubuntu nor RHEL.... \n"; 
+        unknown_option
+        exit 1; 
+    fi  
+else 
+    echo -e "    Not a Linux platform ... \n"; 
+    unknown_option
+    exit 1; 
+fi
+
+[[ "$1" == "--help" || "$1" == "help" || "$1" == "-h" ]] && { unknown_option; exit 0; }
+
+if [[ "$1" == 'master' ]]; then 
+    echo -e "\n-------------------------- K8S Master node setup --------------------------"
+elif [[ "$1" == 'worker' ]]; then 
+    echo -e "\n-------------------------- K8S Worker node setup --------------------------"
+else 
+    unknown_option $1
+    exit 1
+fi
+
+# Remaining part of the script follows unchanged...
